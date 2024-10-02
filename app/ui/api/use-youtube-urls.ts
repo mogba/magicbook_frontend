@@ -1,8 +1,10 @@
 import { useQuery } from "react-query";
 
-import { magicFetch } from "../tools";
+import { useMagicFetch } from "./use-magic-fetch";
 
-export function getYouTubeUrls() {
+export function useGetYouTubeUrls() {
+  const { magicFetch } = useMagicFetch();
+
   return useQuery({
     queryKey: ["content"],
     queryFn: async () => {
