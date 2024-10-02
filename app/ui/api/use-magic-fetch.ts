@@ -6,28 +6,36 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 type FetchWrapperOptions = {
   method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
   headers?: Record<string, string>;
-  body?: any;
+  body?: Record<string, unknown>;
   params?: Record<string, string | number>;
 };
 
-type FetchWrapperResponse<T> = {
-  error: boolean;
-  status?: number;
-  data?: T;
-  message?: string;
-};
+type FetchWrapperResponse<T> =
+  | {
+      error: false;
+      data: T;
+    }
+  | {
+      error: true;
+      message: string;
+    };
 
 const defaultHeaders: Record<string, string> = {
   "Content-Type": "application/json",
 };
 
-function buildQueryParams(params: Record<string, string | number>): string {
-  return new URLSearchParams(params as any).toString();
+function buildQueryParams(params: Record<string, unknown>): string {
+  return new URLSearchParams(params as Record<string, string>).toString();
 }
 
 export function useMagicFetch() {
+  const getToken = useCallback(async () => {
+    // TODO: Retrieve token from app's session
+    return "<token>";
+  }, []);
+
   const magicFetch = useCallback(
-    async function <T = any>(
+    async function <T = unknown>(
       url: string,
       options: FetchWrapperOptions = {}
     ): Promise<FetchWrapperResponse<T>> {
@@ -41,7 +49,7 @@ export function useMagicFetch() {
         ...defaultHeaders,
         ...options.headers,
         Origin: WEBCLIENT_URL,
-        Authorization: `Bearer ${await getToken()}`,
+        Authorization: `JWT ${await getToken()}`,
       };
 
       if (options.params) {
@@ -63,13 +71,13 @@ export function useMagicFetch() {
 
       try {
         const response = await fetch(baseUrl, config);
-        const data = (await response.json()) as T;
+        const data = await response.json();
 
         if (!response.ok) {
-          return { error: true, status: response.status, data };
+          return { error: true, message: data.error };
         }
 
-        return { error: false, status: response.status, data };
+        return { error: false, data };
       } catch (err) {
         return { error: true, message: (err as Error).message };
       }
