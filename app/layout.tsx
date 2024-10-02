@@ -1,22 +1,26 @@
+"use client";
+
 import "@/app/ui/globals.css";
 
-import type { Metadata } from "next";
+import { QueryClient, QueryClientProvider } from "react-query";
 
 import { inter } from "@/app/ui/fonts";
 
-export const metadata: Metadata = {
-  title: "Magicbook",
-  description: "Save your favorite YouTube Videos",
-};
+const queryClient = new QueryClient();
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} antialiased`}>{children}</body>
-    </html>
+    <QueryClientProvider client={queryClient}>
+      <html
+        lang="en"
+        className={`${inter.className} antialiased flex h-screen w-screen`}
+      >
+        <body>{children}</body>
+      </html>
+    </QueryClientProvider>
   );
 }
